@@ -50,7 +50,7 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-
+    }
 
     private fun onRequestPermissionResult(requestCode: Int, grantResult: Int) {
         val msg = if (grantResult == PackageManager.PERMISSION_GRANTED) {
