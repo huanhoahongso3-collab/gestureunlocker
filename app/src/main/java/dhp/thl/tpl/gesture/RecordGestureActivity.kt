@@ -25,7 +25,7 @@ class RecordGestureActivity : Activity() {
             0, 1f
         )
         gestureOverlay.gestureColor = Color.BLUE
-        gestureOverlay.eventsInterceptionEnabled = true
+        gestureOverlay.isEventsInterceptionEnabled = true
         
         var currentGesture: android.gesture.Gesture? = null
 

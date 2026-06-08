@@ -21,7 +21,7 @@ class MainActivity : ComponentActivity() {
         val settingsManager = SettingsManager(this)
 
         // Request Shizuku Permission
-        if (Shizuku.pingBpf() && Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) {
+        if (Shizuku.pingBinder() && Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) {
             Shizuku.requestPermission(100)
         }
 
@@ -39,7 +39,7 @@ class MainActivity : ComponentActivity() {
                             startActivity(Intent(this@MainActivity, RecordGestureActivity::class.java))
                         },
                         onRequestShizuku = {
-                            if (Shizuku.pingBpf() && Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) {
+                            if (Shizuku.pingBinder() && Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) {
                                 Shizuku.requestPermission(100)
                             } else {
                                 Toast.makeText(this@MainActivity, "Shizuku is running and permission granted", Toast.LENGTH_SHORT).show()

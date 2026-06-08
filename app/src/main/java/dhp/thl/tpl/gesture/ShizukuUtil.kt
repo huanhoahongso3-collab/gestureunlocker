@@ -6,7 +6,7 @@ import rikka.shizuku.Shizuku
 object ShizukuUtil {
 
     fun unlockDevice(pin: String) {
-        if (!Shizuku.pingBpf()) {
+        if (!Shizuku.pingBinder()) {
             Log.e("ShizukuUtil", "Shizuku is not running")
             return
         }
