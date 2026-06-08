@@ -24,6 +24,10 @@
             </intent-filter>
         </activity>
 
+        <meta-data
+            android:name="moe.shizuku.client.V3_SUPPORT"
+            android:value="true" />
+
         <activity
             android:name=".RecordGestureActivity"
             android:exported="false"

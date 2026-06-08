@@ -22,11 +22,18 @@ class MainActivity : ComponentActivity() {
 
         // Request Shizuku Permission
         Shizuku.addRequestPermissionResultListener(this::onRequestPermissionResult)
-        if (Shizuku.pingBinder() && Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) {
-            try {
-                Shizuku.requestPermission(100)
-            } catch (e: Exception) {
-                Toast.makeText(this, "Failed to request Shizuku permission. Please open Shizuku app to enable it manually.", Toast.LENGTH_LONG).show()
+        if (Shizuku.pingBinder()) {
+            if (Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) {
+                // Granted
+            } else if (Shizuku.shouldShowRequestPermissionRationale()) {
+                // Denied previously
+                Toast.makeText(this, "Please grant Shizuku permission manually in Shizuku app.", Toast.LENGTH_LONG).show()
+            } else {
+                try {
+                    Shizuku.requestPermission(100)
+                } catch (e: Exception) {
+                    Toast.makeText(this, "Failed to request Shizuku permission. Please open Shizuku app to enable it manually.", Toast.LENGTH_LONG).show()
+                }
             }
         }
 
@@ -44,14 +51,20 @@ class MainActivity : ComponentActivity() {
                             startActivity(Intent(this@MainActivity, RecordGestureActivity::class.java))
                         },
                         onRequestShizuku = {
-                            if (Shizuku.pingBinder() && Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) {
-                                try {
-                                    Shizuku.requestPermission(100)
-                                } catch (e: Exception) {
-                                    Toast.makeText(this@MainActivity, "Failed to request Shizuku permission. Please open Shizuku app to enable it manually.", Toast.LENGTH_LONG).show()
+                            if (Shizuku.pingBinder()) {
+                                if (Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) {
+                                    Toast.makeText(this@MainActivity, "Shizuku permission already granted", Toast.LENGTH_SHORT).show()
+                                } else if (Shizuku.shouldShowRequestPermissionRationale()) {
+                                    Toast.makeText(this@MainActivity, "Please grant Shizuku permission manually in Shizuku app.", Toast.LENGTH_LONG).show()
+                                } else {
+                                    try {
+                                        Shizuku.requestPermission(100)
+                                    } catch (e: Exception) {
+                                        Toast.makeText(this@MainActivity, "Failed to request Shizuku permission. Please open Shizuku app to enable it manually.", Toast.LENGTH_LONG).show()
+                                    }
                                 }
                             } else {
-                                Toast.makeText(this@MainActivity, "Shizuku is running and permission granted", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(this@MainActivity, "Shizuku is not running", Toast.LENGTH_SHORT).show()
                             }
                         }
                     )
