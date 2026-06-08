@@ -23,7 +23,11 @@ class MainActivity : ComponentActivity() {
         // Request Shizuku Permission
         Shizuku.addRequestPermissionResultListener(this::onRequestPermissionResult)
         if (Shizuku.pingBinder() && Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) {
-            Shizuku.requestPermission(100)
+            try {
+                Shizuku.requestPermission(100)
+            } catch (e: Exception) {
+                Toast.makeText(this, "Failed to request Shizuku permission. Please open Shizuku app to enable it manually.", Toast.LENGTH_LONG).show()
+            }
         }
 
         setContent {
@@ -41,7 +45,11 @@ class MainActivity : ComponentActivity() {
                         },
                         onRequestShizuku = {
                             if (Shizuku.pingBinder() && Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) {
-                                Shizuku.requestPermission(100)
+                                try {
+                                    Shizuku.requestPermission(100)
+                                } catch (e: Exception) {
+                                    Toast.makeText(this@MainActivity, "Failed to request Shizuku permission. Please open Shizuku app to enable it manually.", Toast.LENGTH_LONG).show()
+                                }
                             } else {
                                 Toast.makeText(this@MainActivity, "Shizuku is running and permission granted", Toast.LENGTH_SHORT).show()
                             }

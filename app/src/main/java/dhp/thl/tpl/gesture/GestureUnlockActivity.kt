@@ -31,13 +31,13 @@ class GestureUnlockActivity : Activity() {
         }
 
         val btnSend = findViewById<android.widget.Button>(R.id.btn_send)
-        var currentGesture: android.gesture.Gesture? = null
 
         if (!settingsManager.autoOpenGesture) {
             btnSend.visibility = android.view.View.VISIBLE
             btnSend.setOnClickListener {
-                if (currentGesture != null) {
-                    if (GestureManager.recognizeGesture(this, currentGesture!!)) {
+                val currentGesture = gestureOverlay.gesture
+                if (currentGesture != null && currentGesture.strokesCount > 0) {
+                    if (GestureManager.recognizeGesture(this, currentGesture)) {
                         val pin = settingsManager.pin
                         if (pin.isNotEmpty()) {
                             ShizukuUtil.unlockDevice(pin)
@@ -48,7 +48,6 @@ class GestureUnlockActivity : Activity() {
                     } else {
                         Toast.makeText(this, "Incorrect Gesture", Toast.LENGTH_SHORT).show()
                         gestureOverlay.clear(true)
-                        currentGesture = null
                     }
                 } else {
                     Toast.makeText(this, "Draw a gesture first", Toast.LENGTH_SHORT).show()
@@ -70,8 +69,6 @@ class GestureUnlockActivity : Activity() {
                     Toast.makeText(this, "Incorrect Gesture", Toast.LENGTH_SHORT).show()
                     overlay.clear(true)
                 }
-            } else {
-                currentGesture = gesture
             }
         }
     }
