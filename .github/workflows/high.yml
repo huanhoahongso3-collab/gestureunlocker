@@ -9,14 +9,13 @@ jobs:
   build-and-release:
     runs-on: ubuntu-latest
     permissions:
-      contents: write # Required to push code back to repo and create releases
+      contents: write
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
-          # Fetches all history so we can push back to the branch safely
-          fetch-depth: 1
+          fetch-depth: 0 
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -25,16 +24,22 @@ jobs:
           distribution: 'zulu'
           cache: 'gradle'
 
-      # 1. Generate gradlew if missing
-      - name: Ensure Gradle Wrapper Exists
+      # 1. Properly setup a modern version of Gradle if gradlew is missing
+      - name: Setup Gradle (Fallback)
+        if: ${{ hashFiles('gradlew') == '' }}
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.5' # Uses a modern Gradle version that supports dependencyResolutionManagement
+
+      # 2. Generate the wrapper files using the modern Gradle version
+      - name: Generate Gradle Wrapper if missing
         run: |
           if [ ! -f "./gradlew" ]; then
-            echo "gradlew not found! Installing Gradle to generate wrapper..."
-            sudo apt-get update && sudo apt-get install -y gradle
+            echo "gradlew not found! Generating modern wrapper..."
             gradle wrapper
           fi
 
-      # 2. Automatically commit gradlew back to the repository if it was generated
+      # 3. Automatically commit gradlew back to the repository
       - name: Commit and Push gradlew if missing
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
@@ -42,6 +47,7 @@ jobs:
           file_pattern: 'gradlew gradlew.bat gradle/wrapper/*'
           disable_globbing: true
 
+      # 4. Standard build steps
       - name: Grant Execute Permission for Gradle
         run: chmod +x ./gradlew
 
@@ -51,7 +57,7 @@ jobs:
       - name: Build Release Unsigned APK
         run: ./gradlew assembleRelease
 
-      # 3. Create prerelease using the current commit SHA
+      # 5. Create prerelease using the current commit SHA
       - name: Create Prerelease
         uses: softprops/action-gh-release@v2
         with:
