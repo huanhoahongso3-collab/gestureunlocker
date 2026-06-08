@@ -1,0 +1,64 @@
+name: Build & Prerelease APKs
+
+on:
+  push:
+    branches:
+      - main # Change this to your default branch if it's 'master'
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Required to push code back to repo and create releases
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          # Fetches all history so we can push back to the branch safely
+          fetch-depth: 1
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'zulu'
+          cache: 'gradle'
+
+      # 1. Generate gradlew if missing
+      - name: Ensure Gradle Wrapper Exists
+        run: |
+          if [ ! -f "./gradlew" ]; then
+            echo "gradlew not found! Installing Gradle to generate wrapper..."
+            sudo apt-get update && sudo apt-get install -y gradle
+            gradle wrapper
+          fi
+
+      # 2. Automatically commit gradlew back to the repository if it was generated
+      - name: Commit and Push gradlew if missing
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: automatically restore missing gradle wrapper"
+          file_pattern: 'gradlew gradlew.bat gradle/wrapper/*'
+          disable_globbing: true
+
+      - name: Grant Execute Permission for Gradle
+        run: chmod +x ./gradlew
+
+      - name: Build Debug APK
+        run: ./gradlew assembleDebug
+
+      - name: Build Release Unsigned APK
+        run: ./gradlew assembleRelease
+
+      # 3. Create prerelease using the current commit SHA
+      - name: Create Prerelease
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ github.sha }}
+          tag_name: ${{ github.sha }}
+          draft: false
+          prerelease: true
+          files: |
+            **/build/outputs/apk/debug/*-debug.apk
+            **/build/outputs/apk/release/*-release-unsigned.apk
