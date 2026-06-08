@@ -10,10 +10,10 @@ import android.widget.RemoteViews
 class UnlockWidgetProvider : AppWidgetProvider() {
     override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
         for (appWidgetId in appWidgetIds) {
-            val intent = Intent(context, GestureUnlockActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            val intent = Intent(context, WidgetReceiver::class.java).apply {
+                action = "dhp.thl.tpl.gesture.WIDGET_CLICKED"
             }
-            val pendingIntent = PendingIntent.getActivity(
+            val pendingIntent = PendingIntent.getBroadcast(
                 context, 
                 0, 
                 intent, 

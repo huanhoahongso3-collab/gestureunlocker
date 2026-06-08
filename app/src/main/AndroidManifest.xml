@@ -4,6 +4,7 @@
 
     <uses-permission android:name="moe.shizuku.manager.permission.API_V23" />
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
     <application
         android:allowBackup="true"
@@ -50,6 +51,14 @@
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/unlock_widget_info" />
+        </receiver>
+
+        <receiver
+            android:name=".WidgetReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="dhp.thl.tpl.gesture.WIDGET_CLICKED" />
+            </intent-filter>
         </receiver>
 
     </application>

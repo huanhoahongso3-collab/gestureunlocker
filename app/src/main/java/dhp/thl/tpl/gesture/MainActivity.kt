@@ -21,6 +21,7 @@ class MainActivity : ComponentActivity() {
         val settingsManager = SettingsManager(this)
 
         // Request Shizuku Permission
+        Shizuku.addRequestPermissionResultListener(this::onRequestPermissionResult)
         if (Shizuku.pingBinder() && Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) {
             Shizuku.requestPermission(100)
         }
@@ -49,6 +50,20 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+
+
+    private fun onRequestPermissionResult(requestCode: Int, grantResult: Int) {
+        val msg = if (grantResult == PackageManager.PERMISSION_GRANTED) {
+            "Shizuku permission granted!"
+        } else {
+            "Shizuku permission denied. You may need to open Shizuku app to enable it manually."
+        }
+        Toast.makeText(this, msg, Toast.LENGTH_LONG).show()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Shizuku.removeRequestPermissionResultListener(this::onRequestPermissionResult)
     }
 }
 
@@ -59,8 +74,10 @@ fun SettingsScreen(
     onRecordGestureClick: () -> Unit,
     onRequestShizuku: () -> Unit
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     var pin by remember { mutableStateOf(settingsManager.pin) }
     var showGesturePath by remember { mutableStateOf(settingsManager.showGesturePath) }
+    var autoOpenGesture by remember { mutableStateOf(settingsManager.autoOpenGesture) }
 
     Scaffold(
         topBar = {
@@ -100,11 +117,37 @@ fun SettingsScreen(
                 )
             }
 
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text("Auto open when gesture is correct")
+                Switch(
+                    checked = autoOpenGesture,
+                    onCheckedChange = { 
+                        autoOpenGesture = it
+                        settingsManager.autoOpenGesture = it
+                    }
+                )
+            }
+
             Button(
                 onClick = onRecordGestureClick,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Record Unlock Gesture")
+            }
+
+            Button(
+                onClick = {
+                    GestureManager.removeGesture(context)
+                    Toast.makeText(context, "Gesture removed", Toast.LENGTH_SHORT).show()
+                },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+            ) {
+                Text("Remove Saved Gesture")
             }
             
             Button(

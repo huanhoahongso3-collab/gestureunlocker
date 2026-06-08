@@ -30,19 +30,48 @@ class GestureUnlockActivity : Activity() {
             gestureOverlay.uncertainGestureColor = Color.YELLOW
         }
 
-        gestureOverlay.addOnGesturePerformedListener { overlay, gesture ->
-            if (GestureManager.recognizeGesture(this, gesture)) {
-                // Success! Unlock via Shizuku
-                val pin = settingsManager.pin
-                if (pin.isNotEmpty()) {
-                    ShizukuUtil.unlockDevice(pin)
+        val btnSend = findViewById<android.widget.Button>(R.id.btn_send)
+        var currentGesture: android.gesture.Gesture? = null
+
+        if (!settingsManager.autoOpenGesture) {
+            btnSend.visibility = android.view.View.VISIBLE
+            btnSend.setOnClickListener {
+                if (currentGesture != null) {
+                    if (GestureManager.recognizeGesture(this, currentGesture!!)) {
+                        val pin = settingsManager.pin
+                        if (pin.isNotEmpty()) {
+                            ShizukuUtil.unlockDevice(pin)
+                        } else {
+                            Toast.makeText(this, "PIN not set in app", Toast.LENGTH_SHORT).show()
+                        }
+                        finish()
+                    } else {
+                        Toast.makeText(this, "Incorrect Gesture", Toast.LENGTH_SHORT).show()
+                        gestureOverlay.clear(true)
+                        currentGesture = null
+                    }
                 } else {
-                    Toast.makeText(this, "PIN not set in app", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Draw a gesture first", Toast.LENGTH_SHORT).show()
                 }
-                finish()
+            }
+        }
+
+        gestureOverlay.addOnGesturePerformedListener { overlay, gesture ->
+            if (settingsManager.autoOpenGesture) {
+                if (GestureManager.recognizeGesture(this, gesture)) {
+                    val pin = settingsManager.pin
+                    if (pin.isNotEmpty()) {
+                        ShizukuUtil.unlockDevice(pin)
+                    } else {
+                        Toast.makeText(this, "PIN not set in app", Toast.LENGTH_SHORT).show()
+                    }
+                    finish()
+                } else {
+                    Toast.makeText(this, "Incorrect Gesture", Toast.LENGTH_SHORT).show()
+                    overlay.clear(true)
+                }
             } else {
-                Toast.makeText(this, "Incorrect Gesture", Toast.LENGTH_SHORT).show()
-                overlay.clear(true)
+                currentGesture = gesture
             }
         }
     }
